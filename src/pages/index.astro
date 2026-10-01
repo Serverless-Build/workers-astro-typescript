@@ -1,0 +1,65 @@
+---
+const renderedAt = new Date().toISOString();
+Astro.response.headers.set('Cache-Control', 'no-store');
+---
+<!doctype html>
+<html lang="en">
+  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Astro on Workers</title></head>
+  <body>
+    <main>
+      <span class="badge">ASTRO × CLOUDFLARE WORKERS</span>
+      <h1>Welcome to <span>Astro.</span></h1>
+      <p class="intro">Your next idea starts here. Server-rendered at the edge, interactive in the browser.</p>
+      <section class="cards" aria-label="Get started">
+        <a href="https://docs.astro.build/">Learn <b>↗</b><small>Explore components, islands, and routing.</small></a>
+        <a href="https://docs.astro.build/en/guides/deploy/cloudflare/">Deploy <b>↗</b><small>Ship this application to your own Worker.</small></a>
+        <a href="/api/health">Inspect <b>↗</b><small>See the running Worker’s health endpoint.</small></a>
+      </section>
+      <section class="demo">
+        <h2>Try the browser interaction</h2>
+        <button id="counter" type="button">Count: 0</button>
+        <p>The counter lives in this browser tab. Refresh to reset it.</p>
+        <h2>Call the server</h2>
+        <button id="quote" type="button">Calculate a quote</button>
+        <output id="result" aria-live="polite">3 items × 250 cents</output>
+        <p>Rendered on request: <time id="rendered-at">{renderedAt}</time></p>
+      </section>
+    </main>
+    <script>
+      const counter = document.querySelector<HTMLButtonElement>('#counter')!;
+      let count = 0;
+      counter.addEventListener('click', () => { counter.textContent = `Count: ${++count}`; });
+      const quote = document.querySelector<HTMLButtonElement>('#quote')!;
+      const result = document.querySelector<HTMLOutputElement>('#result')!;
+      quote.addEventListener('click', async () => {
+        quote.disabled = true;
+        try {
+          const response = await fetch('/api/quote?quantity=3&unit_price_cents=250');
+          if (!response.ok) throw new Error('Quote unavailable');
+          const data = await response.json();
+          result.textContent = `Total: ${data.total_cents} cents (${data.currency})`;
+        } catch { result.textContent = 'Could not load the quote. Try again.'; }
+        finally { quote.disabled = false; }
+      });
+    </script>
+  </body>
+</html>
+<style>
+  :global(*) { box-sizing: border-box; }
+  :global(body) { margin: 0; color: #eee; background: #11101a; font: 16px/1.6 system-ui, sans-serif; }
+  main { max-width: 960px; padding: 48px 24px; margin: auto; }
+  .badge { font-size: 12px; letter-spacing: .12em; color: #d9b8ff; }
+  h1 { font-size: clamp(40px, 7vw, 72px); line-height: 1.1; letter-spacing: -.04em; }
+  h1 span { color: #c79cff; }
+  .intro { max-width: 580px; color: #bbb5ce; font-size: 20px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 32px 0; }
+  a { color: #eee; text-decoration: none; background: #211c30; border: 1px solid #443558; padding: 20px; border-radius: 16px; font-size: 22px; }
+  a b { float: right; color: #c79cff; }
+  small { display: block; font-size: 14px; color: #bfb7d0; margin-top: 12px; }
+  .demo { border-top: 1px solid #443558; padding-top: 12px; }
+  h2 { font-size: 18px; }
+  button { background: #c79cff; color: #20132e; border: 0; padding: 12px 18px; border-radius: 8px; font: inherit; cursor: pointer; }
+  button:focus-visible, a:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+  output { display: block; margin-top: 12px; }
+  p, time { overflow-wrap: anywhere; }
+</style>

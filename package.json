@@ -1,0 +1,8 @@
+{
+  "name": "workers-astro-typescript",
+  "private": true,
+  "type": "module",
+  "scripts": { "dev": "astro dev --host 127.0.0.1", "build": "astro build", "check": "astro check", "deploy": "npm run build && wrangler deploy --config dist/server/wrangler.json" },
+  "dependencies": { "astro": "7.3.5", "@astrojs/cloudflare": "14.3.3" },
+  "devDependencies": { "@astrojs/check": "^0.9.4", "typescript": "^5.9.3", "wrangler": "4.145.0" }
+}
